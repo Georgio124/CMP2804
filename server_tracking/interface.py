@@ -1,0 +1,52 @@
+#this file is the interface of the main applciation
+from tkinter import *
+from tkinter import font
+
+#event handler file
+from even_handler import *
+
+
+#main window 
+root = Tk()
+
+#font size
+font_Size_lbl = font.Font(size=24)
+font_Size_btn = font.Font(size=16)
+#title of the application
+root.title("Traffic Tracker")
+# dimentions
+root.geometry('700x500')
+
+#lable welcoming
+welcome_lbl = Label(root, text="Welcome, to start the server press start!", font=font_Size_lbl)
+welcome_lbl.grid(column=2, padx=5, pady=5)
+
+#boot the server
+start_server = Button(root, text="Start Server", fg="white" , background="green", command=click_server,font=font_Size_btn )
+start_server.grid(column=2, row= 5, padx=50, pady=50 )
+
+#stopping the server
+start_server = Button(root, text="Stop Server", fg="white" , background="red", command=click_stop,font=font_Size_btn )
+start_server.grid(column=3, row = 5 )
+
+#opening the graph
+show_graph = Button(root, text= "Show Graph", fg="white", background="blue",command=click_graph, font=font_Size_btn )
+show_graph.grid(column=2, row= 6)
+
+#opening the graph
+change_timeout = Button(root, text= "Change Timeout", fg="white", background="blue",command=click_timeout, font=font_Size_btn )
+change_timeout.grid(column=3, row=6)
+
+#fucntion for getting ips to block
+add_ip_frame = Frame(root)
+add_ip_frame.grid(column=2, row=7)
+block_ip_lbl = Label(add_ip_frame, text= "Add ip address to block.", font=font.Font(size=14))
+block_ip_lbl.grid(column=2, row = 7)
+
+block_ip_entry = Entry(add_ip_frame)
+block_ip_entry.grid(column=2, row=8)
+
+block_ip_btn = Button(add_ip_frame, text="Submit", font=font.Font(size=10) )
+block_ip_btn.grid(column=3, row=8)
+#loop
+root.mainloop()
