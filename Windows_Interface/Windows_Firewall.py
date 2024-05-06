@@ -98,28 +98,23 @@ def setup_triggers():
     connection = db.connect_and_initialise()
     db.create_triggers(connection)
 
-async def monitor_rule_changes():
-    while True:
-        with connect_database() as connection:
-            with connection.cursor() as cursor:
-                cursor.execute("SELECT * FROM rule_changes WHERE processed = 0 ORDER BY change_timestamp ASC")
-                changes = cursor.fetchall()
-                for change in changes:
-                    rule_id = change['rule_id']
-                    if change['change_type'] == 'Added':
-                        cursor.execute("SELECT * FROM firewall_rules WHERE RuleID = %s", (rule_id,))
-                        rule = cursor.fetchone()
-                        add_rule(rule)
-                    elif change['change_type'] == 'Deleted':
-                        remove_rule_from_firewall(rule_id)
-                    cursor.execute("UPDATE rule_changes SET processed = 1 WHERE change_id = %s", (change['change_id'],))
-                connection.commit()
-        await asyncio.sleep(10)
-
 def remove_rule_from_firewall(rule_id):
     name = f"TSE-Demo - Rule: {rule_id}"
     cmd = ["powershell", "Remove-NetFirewallRule", f"-DisplayName '{name}'"]
     subprocess.run(cmd, check=True)
+    
+async def check_new_rules():
+    while True:
+        rules = get_firewall_rules()
+        for rule in rules:
+            add_rule(rule)
+        
+        await asyncio.sleep(1) # Added to demonstrate the real time rule changes in debug mode. Time delays can be removed for production
+        print("Checking for rule changes...")
+        
+        
+        
+        
 
 async def main():
     setup_triggers() # sets triggers to detect when new rules are added or removed
@@ -130,7 +125,7 @@ async def main():
     for rule in rules: # iterates through each rule and adds them to the firewall
         add_rule(rule)
     
-    await monitor_rule_changes() # starts monitoring for rule changes
+    await check_new_rules() # starts monitoring for rule changes
 
 if __name__ == "__main__":
     asyncio.run(main())
