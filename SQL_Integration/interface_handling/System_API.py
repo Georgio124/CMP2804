@@ -60,25 +60,14 @@ def get_rules():
 
 # Adds a new rule to the database
 @app.post("/rules", response_model=FirewallRule)
-def add_rule(rule):
-    db_conn = DatabaseConnection()
-    conn = db_conn.connect_and_initialise()
-    cursor = conn.cursor()
-
-    # This assumes your table columns are named ip, allow_deny, protocol, and weight
-    # Adjust the column names and the query according to your actual database schema
-    query = """
-    INSERT INTO firewall_rules (IP, AllowDeny, Protocol, Weighting)
-    VALUES (%s, %s, %s, %s)
-    """
-    try:
+def add_rule(rule: FirewallRule):
+    with db_connection.connect_and_initialise() as conn:
+        cursor = conn.cursor()
+        query = "INSERT INTO firewall_rules (IP, AllowDeny, Protocol, Weighting) VALUES (%s, %s, %s, %s)"
         cursor.execute(query, (rule.ip, rule.allow_deny, rule.protocol, rule.weight))
         conn.commit()
-    except pymysql.Error as e:
-        print("An error occurred:", e)
-        conn.rollback()  # Rollback in case of error
-    finally:
-        conn.close()
+        rule_id = cursor.lastrowid
+    return {**rule.dict(), "id": rule_id}
 
 # Deletes a rule from the database
 @app.delete("/rules/{rule_id}", response_model=FirewallRule)
