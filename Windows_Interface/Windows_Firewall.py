@@ -41,7 +41,7 @@ def get_firewall_rules():
             cursor.execute("SELECT * FROM firewall_rules ORDER BY weighting DESC")
             return cursor.fetchall()
 
-
+# Adds the physical rule with the specified criteria from the database onto windows defender firewall
 def add_rule(rule):
     name = f"TSE-Demo - Rule: {rule['RuleID']}"
     action = 'Allow' if rule['AllowDeny'] == 'Allow' else 'Block'
