@@ -12,7 +12,7 @@ sys.path.append(root)
 from SQL_Integration.connection_handling.DatabaseConnection import DatabaseConnection
 
 
-# Pulls the .env file from the relative parent directory
+# Pulls the .env file from the absolute parent directory
 load_dotenv('.env')
 
 # Pulls from database credentials specified in main .env file - encapsulated from DatabaseConnection.py to allow individual file testing
