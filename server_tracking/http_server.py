@@ -6,7 +6,7 @@ import http.server
 from os import path
 
 #variables 
-host_name = "loalhost"
+host_name = "localhost"
 #any valid port
 port = 8080
 #home directory of the html code

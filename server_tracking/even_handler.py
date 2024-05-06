@@ -7,7 +7,7 @@ import graph_2
 
 #supporting files
 from main_server import *
-from interface import block_ip_entry
+#from interface import block_ip_entry
 
 #threading class
 class thread_Server(threading.Thread):
@@ -68,12 +68,12 @@ def click_timeout():
     
 
 #blocking an ip by adding it to the database
-def click_add_ip():
+"""def click_add_ip():
     #checking if the text is empty
     input_txt  = block_ip_entry.get()
     if input_txt == "":
         messagebox.showwarning("Status", "The text box is empty")
     else:
         #add ip to the database
-        pass
+        pass"""
 
