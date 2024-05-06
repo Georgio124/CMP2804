@@ -10,7 +10,6 @@ load_dotenv('../.env')
 
 # Pulls from database credentials specified in main .env file - encapsulated from DatabaseConnection.py to allow individual file testing
 def connect_database():
-    """ Connect to the SQL database using credentials from the .env file. """
     return pymysql.connect(
         host=os.getenv('SQLHost'),
         port=int(os.getenv('SQLPort')),
