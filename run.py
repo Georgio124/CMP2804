@@ -1,4 +1,7 @@
 import subprocess
+import sys
+import os
+
 
 # built with windows in mind, would require .sh support for linux
 def Run_process(path):
@@ -8,7 +11,8 @@ def Run_process(path):
 # Add packet sniffer or other modules here later on if needed
 scripts = [
     "SQL_Integration/main.py",
-    "server_tracking/interface.py"
+    #"server_tracking/interface.py",
+    "Windows_Interface/Windows_Firewall.py"
 ]
 
 if __name__ == "__main__":

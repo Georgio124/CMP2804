@@ -6,11 +6,14 @@ import subprocess
 import asyncio
 from dotenv import load_dotenv
 
-sys.path.append('../SQL_Integration/connection_handling')
-from DatabaseConnection import DatabaseConnection
+root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(root)
+
+from SQL_Integration.connection_handling.DatabaseConnection import DatabaseConnection
+
 
 # Pulls the .env file from the relative parent directory
-load_dotenv('../.env')
+load_dotenv('.env')
 
 # Pulls from database credentials specified in main .env file - encapsulated from DatabaseConnection.py to allow individual file testing
 def connect_database():
@@ -30,7 +33,6 @@ def clear_rules():
         "Get-NetFirewallRule -Group 'TSE-Demo' | Remove-NetFirewallRule"
     ]
     subprocess.run(cmd, check=True)
-
 
 # Check if script has admin perms, returns a False if not
 def check_if_admin():
@@ -70,9 +72,9 @@ def add_rule(rule):
     except subprocess.CalledProcessError:
         pass
 
-    # Decides the protocol (Setting the protocol to nothing on Windows firewall automatically blocks each protocol)
+    # Decides the protocol
     protocol = rule['Protocol']
-    if protocol == "ALL": # sets the protocol_cmd to nothing (to be later removed) which blocks all protocols
+    if protocol == "ALL": # sets the protocol_cmd to nothing which blocks all protocols
         protocol_cmd = ""
     else:
         protocol_cmd = f"-Protocol {protocol}" # sets the protocol_cmd variable to the actual protocol field
@@ -91,21 +93,44 @@ def add_rule(rule):
     cmd = list(filter(None, cmd))
     subprocess.run(cmd, check=True)
     
- def setup_triggers():
+def setup_triggers():
     db = DatabaseConnection()
     connection = db.connect_and_initialise()
     db.create_triggers(connection)
 
+async def monitor_rule_changes():
+    while True:
+        with connect_database() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT * FROM rule_changes WHERE processed = 0 ORDER BY change_timestamp ASC")
+                changes = cursor.fetchall()
+                for change in changes:
+                    rule_id = change['rule_id']
+                    if change['change_type'] == 'Added':
+                        cursor.execute("SELECT * FROM firewall_rules WHERE RuleID = %s", (rule_id,))
+                        rule = cursor.fetchone()
+                        add_rule(rule)
+                    elif change['change_type'] == 'Deleted':
+                        remove_rule_from_firewall(rule_id)
+                    cursor.execute("UPDATE rule_changes SET processed = 1 WHERE change_id = %s", (change['change_id'],))
+                connection.commit()
+        await asyncio.sleep(10)
 
+def remove_rule_from_firewall(rule_id):
+    name = f"TSE-Demo - Rule: {rule_id}"
+    cmd = ["powershell", "Remove-NetFirewallRule", f"-DisplayName '{name}'"]
+    subprocess.run(cmd, check=True)
 
-def main():
+async def main():
     setup_triggers() # sets triggers to detect when new rules are added or removed
     request_admin_perms() # check if the script can run powershell as an admin
-    clear_rules()
+    clear_rules() # clear all rules from the firewall group 'TSE-Demo'
     
     rules = get_firewall_rules() # imports rules from database into main memory
     for rule in rules: # iterates through each rule and adds them to the firewall
         add_rule(rule)
+    
+    await monitor_rule_changes() # starts monitoring for rule changes
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
