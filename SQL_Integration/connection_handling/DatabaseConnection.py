@@ -80,7 +80,7 @@ class DatabaseConnection:
     def create_triggers(self, connection):
         with connection.cursor() as cursor:
             cursor.execute("DROP TABLE IF EXISTS rule_changes")
-            cursor.execute("""               
+            cursor.execute("""
                 CREATE TABLE rule_changes (
                     change_id INT AUTO_INCREMENT PRIMARY KEY,
                     RuleID INT,
@@ -91,28 +91,30 @@ class DatabaseConnection:
                 )
             """)
 
-            cursor.execute("DROP TRIGGER AfterInsertRule")
+            cursor.execute("DROP TRIGGER IF EXISTS AfterInsertRule")
+            cursor.execute("DROP TRIGGER IF EXISTS AfterDeleteRule")
+
             cursor.execute("""
                 CREATE TRIGGER AfterInsertRule
-                AFTER INSERT ON firewall_rules 
+                AFTER INSERT ON firewall_rules
                 FOR EACH ROW
                 BEGIN
-                    INSERT INTO rule_changes (rule_id, change_type, change_timestamp)
+                    INSERT INTO rule_changes (RuleID, change_type, change_timestamp)
                     VALUES (NEW.RuleID, 'Added', NOW());
                 END
             """)
-            
-            cursor.execute("DROP TRIGGER AfterDeleteRule")
+
             cursor.execute("""
                 CREATE TRIGGER AfterDeleteRule
-                AFTER DELETE ON firewall_rules 
+                AFTER DELETE ON firewall_rules
                 FOR EACH ROW
                 BEGIN
-                    INSERT INTO rule_changes (rule_id, change_type, change_timestamp)
+                    INSERT INTO rule_changes (RuleID, change_type, change_timestamp)
                     VALUES (OLD.RuleID, 'Deleted', NOW());
                 END
             """)
             connection.commit()
+
 
 if __name__ == "__main__":
     db = DatabaseConnection()

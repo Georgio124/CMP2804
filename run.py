@@ -12,7 +12,7 @@ def Run_process(path):
 scripts = [
     "SQL_Integration/main.py",
     #"server_tracking/interface.py",
-    "Windows_Interface/Windows_Firewall.py"
+    #"Windows_Interface/Windows_Firewall.py"
 ]
 
 if __name__ == "__main__":
