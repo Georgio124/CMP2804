@@ -75,6 +75,34 @@ class DatabaseConnection:
             charset='utf8mb4',
             cursorclass=pymysql.cursors.DictCursor
         )
+    
+    # Adds triggers to the database if they dont already exist that can be used to detect when new rules are added or removed in Windows_Firewall.py
+    def create_triggers(self, connection):
+        with connection.cursor() as cursor:
+            cursor.execute("SHOW TRIGGERS LIKE 'AfterInsertRule'")
+            if cursor.rowcount == 0:
+                cursor.execute("""
+                    CREATE TRIGGER AfterInsertRule
+                    AFTER INSERT ON firewall_rules 
+                    FOR EACH ROW
+                    BEGIN
+                        INSERT INTO rule_changes (rule_id, change_type, change_timestamp)
+                        VALUES (NEW.RuleID, 'Added', NOW());
+                    END
+                """)
+            
+            cursor.execute("SHOW TRIGGERS LIKE 'AfterDeleteRule'")
+            if cursor.rowcount == 0:
+                cursor.execute("""
+                    CREATE TRIGGER AfterDeleteRule
+                    AFTER DELETE ON firewall_rules 
+                    FOR EACH ROW
+                    BEGIN
+                        INSERT INTO rule_changes (rule_id, change_type, change_timestamp)
+                        VALUES (OLD.RuleID, 'Deleted', NOW());
+                    END
+                """)
+            connection.commit()
 
 if __name__ == "__main__":
     db = DatabaseConnection()

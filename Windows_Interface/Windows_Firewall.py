@@ -3,7 +3,11 @@ import sys
 import ctypes
 import pymysql
 import subprocess
+import asyncio
 from dotenv import load_dotenv
+
+sys.path.append('../SQL_Integration/connection_handling')
+from DatabaseConnection import DatabaseConnection
 
 # Pulls the .env file from the relative parent directory
 load_dotenv('../.env')
@@ -86,10 +90,16 @@ def add_rule(rule):
     # Filtering out empty strings from cmd list which are added if protocol is "ALL" before running it as admin on powershell
     cmd = list(filter(None, cmd))
     subprocess.run(cmd, check=True)
+    
+ def setup_triggers():
+    db = DatabaseConnection()
+    connection = db.connect_and_initialise()
+    db.create_triggers(connection)
 
 
 
 def main():
+    setup_triggers() # sets triggers to detect when new rules are added or removed
     request_admin_perms() # check if the script can run powershell as an admin
     clear_rules()
     
