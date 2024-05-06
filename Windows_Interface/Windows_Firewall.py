@@ -19,6 +19,14 @@ def connect_database():
         cursorclass=pymysql.cursors.DictCursor
     )
 
+# Clears all rules from the firewall group 'TSE-Demo' - general consistency protection upon each restart
+def clear_rules():
+    cmd = [
+        "powershell",
+        "Get-NetFirewallRule -Group 'TSE-Demo' | Remove-NetFirewallRule"
+    ]
+    subprocess.run(cmd, check=True)
+
 
 # Check if script has admin perms, returns a False if not
 def check_if_admin():
@@ -40,20 +48,30 @@ def get_firewall_rules():
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM firewall_rules ORDER BY weighting DESC")
             return cursor.fetchall()
-
+        
 # Adds the physical rule with the specified criteria from the database onto windows defender firewall
 def add_rule(rule):
     name = f"TSE-Demo - Rule: {rule['RuleID']}"
     action = 'Allow' if rule['AllowDeny'] == 'Allow' else 'Block'
- 
     
+    # Check if a rule with the same name already exists
+    existing_rules = ["powershell", "Get-NetFirewallRule", f"-DisplayName '{name}'"]
+    try:
+        existing_rules = subprocess.run(existing_rules, check=True, capture_output=True, text=True)
+        if name in existing_rules.stdout:
+            print(f"Rule '{name}' already exists. Skipping...")
+            return
+        
+    # If the rule doesn't exist, pass the exception
+    except subprocess.CalledProcessError:
+        pass
+
     # Decides the protocol (Setting the protocol to nothing on Windows firewall automatically blocks each protocol)
     protocol = rule['Protocol']
     if protocol == "ALL": # sets the protocol_cmd to nothing (to be later removed) which blocks all protocols
         protocol_cmd = ""
-        
     else:
-        protocol_cmd = (f"-Protocol {protocol}") # sets the protocol_cmd variable to the actual protocol field
+        protocol_cmd = f"-Protocol {protocol}" # sets the protocol_cmd variable to the actual protocol field
     
     cmd = [
         "powershell",
@@ -70,8 +88,11 @@ def add_rule(rule):
     subprocess.run(cmd, check=True)
 
 
+
 def main():
     request_admin_perms() # check if the script can run powershell as an admin
+    clear_rules()
+    
     rules = get_firewall_rules() # imports rules from database into main memory
     for rule in rules: # iterates through each rule and adds them to the firewall
         add_rule(rule)
