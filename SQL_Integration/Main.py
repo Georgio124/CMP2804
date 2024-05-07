@@ -24,8 +24,6 @@ async def start_uvicorn():
     port = int(os.getenv('FastAPI_Port'))
     log_level = os.getenv('FastAPI_LogLevel')
     
-    print(f"Starting FastAPI on {host}:{port} with log level {log_level}")
-
     config = uvicorn.Config(app=app, host=host, port=port, reload=True, log_level=log_level)
     server = uvicorn.Server(config)
     await server.serve()

@@ -104,12 +104,41 @@ def remove_rule_from_firewall(rule_id):
     subprocess.run(cmd, check=True)
     
 async def check_new_rules():
+    local_state = {}  # Stores index of already applied rules into main memory for comparison
+
     while True:
-        rules = get_firewall_rules()
-        for rule in rules:
-            add_rule(rule)
-        
-        await asyncio.sleep(1) # Added to demonstrate the real time rule changes in debug mode. Time delays can be removed for production
+        with connect_database() as connection:
+            with connection.cursor() as cursor:
+                
+                # Checks for any rules that have been deleted and iterates through to delete them from windows firewall
+                cursor.execute("SELECT change_id, RuleID, change_type FROM rule_changes WHERE change_type='Deleted'")
+                deletions = cursor.fetchall()
+                for deletion in deletions:
+                    rule_id = deletion['RuleID']
+                    if rule_id in local_state:
+                        remove_rule_from_firewall(rule_id)
+                        print(f"RuleID {rule_id} deleted from firewall.")
+                        local_state.pop(rule_id)
+                    
+                    # Deletes the record from rule_changes table after the rule has been removed from the firewall
+                    cursor.execute("DELETE FROM rule_changes WHERE change_id=%s", (deletion['change_id'],))
+                    connection.commit()
+
+                # Fetch current rules from the database
+                cursor.execute("SELECT * FROM firewall_rules ORDER BY weighting DESC")
+                current_rules = {rule['RuleID']: rule for rule in cursor.fetchall()}
+
+        # Check for additions or modifications
+        for rule_id, rule_details in current_rules.items():
+            if rule_id not in local_state or local_state[rule_id] != rule_details:
+                if rule_id in local_state:
+                    remove_rule_from_firewall(rule_id)
+                    print(f"Existing rule ID {rule_id} updated.")
+                add_rule(rule_details)
+                local_state[rule_id] = rule_details
+
+        await asyncio.sleep(FrequencyPollRate)  # Frequency of checks - set in .env file
+
         print("Checking for rule changes...")
         
         
@@ -117,13 +146,9 @@ async def check_new_rules():
         
 
 async def main():
-    setup_triggers() # sets triggers to detect when new rules are added or removed
-    request_admin_perms() # check if the script can run powershell as an admin
-    clear_rules() # clear all rules from the firewall group 'TSE-Demo'
-    
-    rules = get_firewall_rules() # imports rules from database into main memory
-    for rule in rules: # iterates through each rule and adds them to the firewall
-        add_rule(rule)
+    setup_triggers()  # Sets triggers to detect when new rules are added or removed
+    request_admin_perms()  # Check if the script can run PowerShell as an admin
+    clear_rules()  # Clear all rules from the firewall group 'TSE-Demo'
     
     await check_new_rules() # starts monitoring for rule changes
 
