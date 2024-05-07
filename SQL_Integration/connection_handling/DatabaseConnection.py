@@ -1,6 +1,10 @@
 import pymysql
 from dotenv import load_dotenv
 import os
+import sys
+
+sys.path.extend([os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '..'])
+load_dotenv()
 
 class DatabaseConnection:
     

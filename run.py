@@ -10,8 +10,8 @@ def Run_process(path):
 
 # Add packet sniffer or other modules here later on if needed
 scripts = [
-    #"SQL_Integration/main.py",
-    #"server_tracking/interface.py",
+    "SQL_Integration/main.py",
+    "server_tracking/interface.py",
     "Windows_Interface/Windows_Firewall.py"
 ]
 

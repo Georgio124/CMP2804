@@ -15,7 +15,7 @@ from SQL_Integration.connection_handling.DatabaseConnection import DatabaseConne
 # Pulls the .env file from the absolute parent directory
 load_dotenv('.env')
 
-# Pulls from database credentials specified in main .env file - encapsulated from DatabaseConnection.py to allow individual file testing
+# Pulls from database credentials specified in main .env file - utilises the connect_database() function from DatabaseConnection.py to establish a connection
 def connect_database():
     return pymysql.connect(
         host=os.getenv('SQLHost'),
@@ -137,7 +137,8 @@ async def check_new_rules():
                 add_rule(rule_details)
                 local_state[rule_id] = rule_details
 
-        await asyncio.sleep(FrequencyPollRate)  # Frequency of checks - set in .env file
+        FrequencyPollRate = int(os.getenv('FrequencyPollRate', '10'))  # Frequency of checks - set in .env file. Defaults to 10 seconds if not specified 
+        await asyncio.sleep(FrequencyPollRate)
 
         print("Checking for rule changes...")
         
