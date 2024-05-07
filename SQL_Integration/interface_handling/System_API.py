@@ -18,8 +18,9 @@ logging.basicConfig(filename='API_logs.log', level=logging.ERROR, format='%(asct
 
 
 # Load environment variables (uses relative pathing) 
-env_path = os.path.join(os.path.dirname(__file__), '..', 'SQL.env')
+env_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
 load_dotenv(dotenv_path=env_path)
+
 
 # establishes base class template for `FirewallRule` transactional data. May need to be changed depending on format of packet sniffer data
 class FirewallRule(BaseModel):
