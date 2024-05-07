@@ -52,3 +52,51 @@ Traceback (most recent call last):
     ip = self.validate_ip(input("Enter IP address: "))
                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 EOFError
+2024-05-07 13:54:10,601 - ERROR - Task exception was never retrieved
+future: <Task finished name='Task-3' coro=<run_cli() done, defined at C:\Users\xbox2\Downloads\CMP2804\SQL_Integration\Main.py:38> exception=EOFError()>
+Traceback (most recent call last):
+  File "C:\Users\xbox2\Downloads\CMP2804\SQL_Integration\Main.py", line 40, in run_cli
+    await asyncio.to_thread(cli.run)
+  File "C:\Users\xbox2\AppData\Local\Programs\Python\Python312\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\xbox2\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\xbox2\Downloads\CMP2804\SQL_Integration\interface_handling\User_CLI.py", line 61, in run
+    data = self.collect_data()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\xbox2\Downloads\CMP2804\SQL_Integration\interface_handling\User_CLI.py", line 17, in collect_data
+    ip = self.validate_ip(input("Enter IP address: "))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+EOFError
+2024-05-07 13:56:05,870 - ERROR - Task exception was never retrieved
+future: <Task finished name='Task-3' coro=<run_cli() done, defined at C:\Users\xbox2\Downloads\CMP2804\SQL_Integration\main.py:38> exception=EOFError()>
+Traceback (most recent call last):
+  File "C:\Users\xbox2\Downloads\CMP2804\SQL_Integration\interface_handling\User_CLI.py", line 31, in validate_ip
+    ipaddress.ip_address(ip)
+  File "C:\Users\xbox2\AppData\Local\Programs\Python\Python312\Lib\ipaddress.py", line 54, in ip_address
+    raise ValueError(f'{address!r} does not appear to be an IPv4 or IPv6 address')
+ValueError: '' does not appear to be an IPv4 or IPv6 address
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\xbox2\Downloads\CMP2804\SQL_Integration\main.py", line 40, in run_cli
+    await asyncio.to_thread(cli.run)
+  File "C:\Users\xbox2\AppData\Local\Programs\Python\Python312\Lib\asyncio\threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\xbox2\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\xbox2\Downloads\CMP2804\SQL_Integration\interface_handling\User_CLI.py", line 61, in run
+    data = self.collect_data()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\xbox2\Downloads\CMP2804\SQL_Integration\interface_handling\User_CLI.py", line 17, in collect_data
+    ip = self.validate_ip(input("Enter IP address: "))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\xbox2\Downloads\CMP2804\SQL_Integration\interface_handling\User_CLI.py", line 34, in validate_ip
+    return self.validate_ip(input("Invalid IP address. Please enter a valid IP address: "))
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+EOFError

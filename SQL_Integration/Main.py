@@ -35,8 +35,9 @@ async def startup_event():
     cli = UserCLI(db_connection)
     asyncio.create_task(run_cli(cli)) # dispatches a new process to run the user CLI
 
+# Only runs if the UserInputFirewallRules environment variable is set to True
 async def run_cli(cli):
-    while True:
+    while (os.getenv('UserInputFirewallRules') == 'True'):
         await asyncio.to_thread(cli.run)
 
 # Sets unique mountpoints for both FastAPI instances - can be changed if needed. /api/system/docs and /api/packet-logging/docs can be used for demonstration purposes
