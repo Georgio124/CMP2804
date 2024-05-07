@@ -1,6 +1,10 @@
 import pymysql
 from dotenv import load_dotenv
 import os
+import sys
+
+sys.path.extend([os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '..'])
+load_dotenv()
 
 class DatabaseConnection:
     
@@ -75,6 +79,46 @@ class DatabaseConnection:
             charset='utf8mb4',
             cursorclass=pymysql.cursors.DictCursor
         )
+    
+    # Adds triggers to the database if they dont already exist that can be used to detect when new rules are added or removed in Windows_Firewall.py
+    def create_triggers(self, connection):
+        with connection.cursor() as cursor:
+            cursor.execute("DROP TABLE IF EXISTS rule_changes")
+            cursor.execute("""
+                CREATE TABLE rule_changes (
+                    change_id INT AUTO_INCREMENT PRIMARY KEY,
+                    RuleID INT,
+                    change_type ENUM('Added', 'Deleted'),
+                    change_timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (RuleID) REFERENCES firewall_rules(RuleID)
+                    ON DELETE CASCADE ON UPDATE CASCADE
+                )
+            """)
+
+            cursor.execute("DROP TRIGGER IF EXISTS AfterInsertRule")
+            cursor.execute("DROP TRIGGER IF EXISTS AfterDeleteRule")
+
+            cursor.execute("""
+                CREATE TRIGGER AfterInsertRule
+                AFTER INSERT ON firewall_rules
+                FOR EACH ROW
+                BEGIN
+                    INSERT INTO rule_changes (RuleID, change_type, change_timestamp)
+                    VALUES (NEW.RuleID, 'Added', NOW());
+                END
+            """)
+
+            cursor.execute("""
+                CREATE TRIGGER AfterDeleteRule
+                AFTER DELETE ON firewall_rules
+                FOR EACH ROW
+                BEGIN
+                    INSERT INTO rule_changes (RuleID, change_type, change_timestamp)
+                    VALUES (OLD.RuleID, 'Deleted', NOW());
+                END
+            """)
+            connection.commit()
+
 
 if __name__ == "__main__":
     db = DatabaseConnection()

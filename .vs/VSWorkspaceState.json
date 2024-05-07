@@ -1,8 +1,12 @@
 {
   "ExpandedNodes": [
     "",
-    "\\SQL-Integration"
+    "\\server_tracking\\__pycache__",
+    "\\SQL_Integration",
+    "\\SQL_Integration\\connection_handling",
+    "\\SQL_Integration\\interface_handling",
+    "\\Windows_interface"
   ],
-  "SelectedNode": "\\SQL-Integration",
+  "SelectedNode": "\\SQL_Integration\\Main.py",
   "PreviewInSolutionExplorer": false
 }

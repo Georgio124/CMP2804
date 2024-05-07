@@ -5,4 +5,11 @@ cryptography
 fastapi
 uvicorn
 pydantic
+pythonping
+tkinter
+matplotlib
+numpy
+threading
+socket
+requests
 scapy
