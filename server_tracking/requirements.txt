@@ -1,9 +1,0 @@
-# This file contains required librries for runnning the application
-
-pythonping
-tkinter
-matplotlib
-numpy
-threading
-socket
-
